@@ -40,7 +40,7 @@ jobs:
       # Note: If this fails again with ambiguity, applyAllPatches might be needed for this specific branch
       - name: Apply Patches (per Paper docs)
         working-directory: ./folia-src # Run in the checked-out directory
-        run: ./gradlew applyPatches    # Using applyPatches per Paper documentation
+        run: ./gradlew applyAllPatches    # Using applyPatches per Paper documentation
         env:
             # Address potential Gradle daemon native access warnings (optional)
             GRADLE_OPTS: "--enable-native-access=ALL-UNNAMED"
