@@ -6,59 +6,49 @@ on:
   pull_request:
     branches: [ "main" ]
   
-  # Schedule to run daily at 00:00 EEST (which is 21:00 UTC)
   schedule:
-    - cron: '0 21 * * *' # Runs at 9 PM UTC daily
-
-  # Allows you to run this workflow manually from the Actions tab
+    - cron: '0 21 * * *' # Runs at 9 PM UTC daily (00:00 EEST)
   workflow_dispatch:
 
 jobs:
   build:
-    runs-on: ubuntu-latest # Use a standard Linux runner
+    runs-on: ubuntu-latest
 
     steps:
       - name: Checkout Folia Source Code
         uses: actions/checkout@v4
         with:
-          repository: 'PaperMC/Folia' # The repository to checkout
-          ref: 'dev/hard-fork'       # The specific branch to checkout
-          path: 'folia-src'          # Checkout into a subdirectory
+          repository: 'PaperMC/Folia'
+          ref: 'dev/hard-fork'
+          path: 'folia-src'
 
       - name: Set up JDK 17
         uses: actions/setup-java@v4
         with:
-          java-version: '17'         # Folia typically requires JDK 17+
-          distribution: 'temurin'    # Use Eclipse Temurin distribution
-          cache: 'gradle'            # Cache Gradle dependencies
-
-      # Optional: Setup Gradle using the wrapper for potentially better caching
-      # If setup-java caching isn't sufficient, uncomment and use this instead/additionally
-      # - name: Setup Gradle
-      #   uses: gradle/actions/setup-gradle@v3
+          java-version: '17'
+          distribution: 'temurin'
+          cache: 'gradle'
 
       - name: Grant Execute Permission to gradlew
-        working-directory: ./folia-src # Run in the checked-out directory
+        working-directory: ./folia-src
         run: chmod +x gradlew
 
-      - name: Apply Patches
-        working-directory: ./folia-src # Run in the checked-out directory
-        run: ./gradlew applyPatches
+      - name: Apply All Patches # <--- Renamed task for clarity
+        working-directory: ./folia-src
+        # Use the unambiguous task name 'applyAllPatches'
+        run: ./gradlew applyAllPatches # <--- THIS IS THE CHANGED LINE
         env:
-            # Address potential Gradle daemon native access warnings (optional)
-            # Might be needed depending on runner/JDK/Gradle combo
             GRADLE_OPTS: "--enable-native-access=ALL-UNNAMED"
 
       - name: Build Folia JAR
-        working-directory: ./folia-src # Run in the checked-out directory
+        working-directory: ./folia-src
         run: ./gradlew createReobfBundlerJar
         env:
-            # Address potential Gradle daemon native access warnings (optional)
             GRADLE_OPTS: "--enable-native-access=ALL-UNNAMED"
 
       - name: Upload Folia JAR Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: folia-dev-hard-fork-jar # Name of the artifact bundle
-          path: ./folia-src/build/libs/folia-bundler-*.jar # Path to the JAR file (uses wildcard)
-          if-no-files-found: error # Fail the step if the JAR isn't found
+          name: folia-dev-hard-fork-jar
+          path: ./folia-src/build/libs/folia-bundler-*.jar
+          if-no-files-found: error
